@@ -2,11 +2,12 @@ import os
 import random
 import numpy as np
 import pandas as pd
+from numpy.linalg import svd as SVD
 random.seed(0)
 PRINT_STEP = 10000
 
 
-class UserBasedCF():
+class MFModel():
     def __init__(self):
         # data distribution
         self.userNum = 6040
@@ -36,13 +37,13 @@ class UserBasedCF():
 
             self.ratingMatrix[userID-1][movieID-1] = rating/self.maxRating
 
-    def buildUserSim(self):
-        for i in range(6039):
-            for j in range(self.userNum):
-                if i*self.userNum+j != 0 and i*self.userNum+j % 1 == 0:
-                    print(f"{'buildUserSim':15}: Finish {i*self.userNum+j}, Total={self.userNum*self.userNum}")
-                print(f"{i*self.userNum+j}({i},{j})")
-                # self.userSimMatrix[i][j] = 0
+    def calcK(self):
+        r = 100
+        u, s, vt = SVD(self.ratingMatrix)
+        ur = u[:, 0:r]
+        sr = s[0:r]
+        vtr = vt[0:r, :]
+        return (ur, sr, vtr)
 
     def recommend(self):
         self.recMatrix = np.matmul(self.ratingMatrix, self.userSimMatrix)
@@ -68,7 +69,7 @@ if __name__ == "__main__":
 
     print(f"Train Set size = {len(trainSet)}")
     print(f"TestSet Set size = {len(testSet)}")
-    model = UserBasedCF()
+    model = MFModel()
     model.loadfile(trainSet)
-    model.buildUserSim()
+    print(model.calcK())
     # model.recommend()
