@@ -91,7 +91,7 @@ class MFModel():
         for x, y in zip(xs, ys):
             error += pow(self.R[x, y] - predicted[x, y], 2)
         return np.sqrt(error)
-    
+
     def mae(self):
         xs, ys = self.R.nonzero()
         predicted = self.full_matrix()
@@ -99,6 +99,14 @@ class MFModel():
         for x, y in zip(xs, ys):
             error.append(abs(self.R[x, y] - predicted[x, y]))
         return np.average(error)
+
+    def rmse(self):
+        xs, ys = self.R.nonzero()
+        predicted = self.full_matrix()
+        error = []
+        for x, y in zip(xs, ys):
+            error.append(pow(self.R[x, y] - predicted[x, y], 2))
+        return np.sqrt(np.average(error))
 
     def biasSVD(self):
         for i, j, r in self.samples:
@@ -108,7 +116,7 @@ class MFModel():
 
             #
             """
-            
+
             """
             self.b_u[i] += self.lr * (e - self.beta * self.b_u[i])
             self.b_i[j] += self.lr * (e - self.beta * self.b_i[j])
