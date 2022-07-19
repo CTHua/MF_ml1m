@@ -71,12 +71,12 @@ class MFModel():
         self.samples = [(i, j, self.R[i, j]) for i in range(self.userNum)
                         for j in range(self.movieNum) if self.R[i, j] > 0]
 
-        # SGD do [steps] round
+        # SVD do [steps] round
         training_process = []
         process = tqdm(range(self.steps), total=self.steps)
         for i in process:
             np.random.shuffle(self.samples)
-            self.sgd()
+            self.biasSVD()
             mse = self.mse()
             training_process.append((i, mse))
             if (i == 0) or ((i+1) % (self.steps / 10) == 0):
@@ -100,13 +100,16 @@ class MFModel():
             error.append(abs(self.R[x, y] - predicted[x, y]))
         return np.average(error)
 
-    def sgd(self):
+    def biasSVD(self):
         for i, j, r in self.samples:
             # error
             prediction = self.get_rating(i, j)
             e = (r - prediction)
 
             #
+            """
+            
+            """
             self.b_u[i] += self.lr * (e - self.beta * self.b_u[i])
             self.b_i[j] += self.lr * (e - self.beta * self.b_i[j])
 
