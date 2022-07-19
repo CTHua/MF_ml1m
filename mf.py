@@ -91,6 +91,14 @@ class MFModel():
         for x, y in zip(xs, ys):
             error += pow(self.R[x, y] - predicted[x, y], 2)
         return np.sqrt(error)
+    
+    def mae(self):
+        xs, ys = self.R.nonzero()
+        predicted = self.full_matrix()
+        error = []
+        for x, y in zip(xs, ys):
+            error.append(abs(self.R[x, y] - predicted[x, y]))
+        return np.average(error)
 
     def sgd(self):
         for i, j, r in self.samples:
