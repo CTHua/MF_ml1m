@@ -1,1 +1,1 @@
-# RecSys_ml1m
+# RecSys_CLIP_lab
