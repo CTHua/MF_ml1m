@@ -13,8 +13,8 @@ def load_data(dataset_path, split="::"):
     for data_item in open(dataset_path):
         # data_item_list:[(6040, 858, 4, 956703932), (1, 593, 3, 1112484661), ...]
         temp_tuple = list(data_item.strip().split(split)[:4])
-        temp_tuple[0] = int(temp_tuple[0])  # userID
-        temp_tuple[1] = int(temp_tuple[1])  # movieID
+        temp_tuple[0] = int(temp_tuple[0])-1  # userID
+        temp_tuple[1] = int(temp_tuple[1])-1  # movieID
         temp_tuple[2] = int(temp_tuple[2])  # rating
         temp_tuple[3] = int(temp_tuple[3])  # timestamp
         data_item_list.append(tuple(temp_tuple))
@@ -87,14 +87,12 @@ class MFModel():
             P[u][k] = P[u][k] + learning_rate * ( r[u][i] - r_hat[u][i] * Q[i][k] - beta * P[u][k] )
             Q[i][k] = Q[i][k] + learning_rate * ( r[u][i] - r_hat[u][i] * P[u][k] - beta * Q[i][k] )
         """
+        r_hat = np.dot(self.P, self.Q.T)
         for u, i, r in self.samples:
-            r_hat = self.P[u, :].dot(self.Q[i, :].T)
-            e = (r - r_hat)
+            e = r - r_hat[u][i]
             # 透過SGD更新參數
-            self.P[u, :] += self.lr * \
-                (e * self.Q[i, :] - self.beta * self.P[u, :])
-            self.Q[i, :] += self.lr * \
-                (e * self.P[u, :] - self.beta * self.Q[i, :])
+            self.P[u] += self.lr * (e * self.Q[i] - self.beta * self.P[u])
+            self.Q[i] += self.lr * (e * self.P[u] - self.beta * self.Q[i])
 
     def biasSVD(self):
         """
@@ -107,9 +105,9 @@ class MFModel():
         """
         for u, i, r in self.samples:
             # error
-            r_hat = self.miu + self.b_u[i] + \
+            r_hat = self.miu + self.b_u[u] + \
                 self.b_i[i]+self.P[u, :].dot(self.Q[i, :].T)
-            e = (r - r_hat)
+            e = r - r_hat
             # 透過SGD更新參數
             self.b_u[u] += self.lr * (e - self.beta * self.b_u[u])
             self.b_i[i] += self.lr * (e - self.beta * self.b_i[i])
@@ -151,7 +149,7 @@ if __name__ == "__main__":
     origin_data = load_data(ratingfile_path)
     ui_matrix = get_ui_matrix(origin_data)
 
-    mf = MFModel(ui_matrix, K=2, lr=0.1, beta=0.3, steps=100)
+    mf = MFModel(ui_matrix, K=100, lr=0.1, beta=0.3, steps=1)
     mf.train()
 
     # user_list = [i[0] for i in obs_dataset]
