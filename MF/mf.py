@@ -149,7 +149,7 @@ if __name__ == "__main__":
     origin_data = load_data(ratingfile_path)
     ui_matrix = get_ui_matrix(origin_data)
 
-    mf = MFModel(ui_matrix, K=100, lr=0.1, beta=0.3, steps=1)
+    mf = MFModel(ui_matrix, K=100, lr=0.00001, beta=0.3, steps=1)
     mf.train()
 
     # user_list = [i[0] for i in obs_dataset]
