@@ -87,12 +87,14 @@ class MFModel():
             P[u][k] = P[u][k] + learning_rate * ( r[u][i] - r_hat[u][i] * Q[i][k] - beta * P[u][k] )
             Q[i][k] = Q[i][k] + learning_rate * ( r[u][i] - r_hat[u][i] * P[u][k] - beta * Q[i][k] )
         """
-        r_hat = np.dot(self.P, self.Q.T)
         for u, i, r in self.samples:
-            e = r - r_hat[u][i]
+            r_hat = self.P[u, :].dot(self.Q[i, :].T)
+            e = r - r_hat
             # 透過SGD更新參數
-            self.P[u] += self.lr * (e * self.Q[i] - self.beta * self.P[u])
-            self.Q[i] += self.lr * (e * self.P[u] - self.beta * self.Q[i])
+            tempP = self.lr * (e * self.Q[i, :] - self.beta * self.P[u, :])
+            self.Q[i, :] += self.lr * \
+                (e * self.P[u, :] - self.beta * self.Q[i, :])
+            self.P[u, :] += tempP
 
     def biasSVD(self):
         """
