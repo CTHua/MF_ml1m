@@ -27,7 +27,7 @@ def get_ui_matrix(data):
     item_list = [i[1] for i in data]
     ui_matrix = np.zeros((max(user_list) + 1, max(item_list) + 1))
 
-    for each_interaction in tqdm(data, total=len(data)):
+    for each_interaction in tqdm(data, total=len(data), ascii=True):
         """ ui_matrix[userID][movieID] = rating """
         ui_matrix[each_interaction[0]
                   ][each_interaction[1]] = each_interaction[2]
@@ -69,7 +69,7 @@ class MFModel():
                     self.samples.append((i, j, self.R[i, j]))
         # do SGD [steps] round
         history = []
-        process = tqdm(range(self.steps), total=self.steps)
+        process = tqdm(range(self.steps), total=self.steps, ascii=True)
         for i in process:
             np.random.shuffle(self.samples)
             self.SVD()
