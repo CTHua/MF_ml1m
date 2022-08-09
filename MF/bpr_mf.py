@@ -60,13 +60,10 @@ class MFModel():
         # 把稀疏矩陣存成陣列
         self.samples = []
         for ui in tqdm(range(self.user_num), ascii=True):
-            for uj in tqdm(range(self.user_num), leave=bool(ui == self.user_num-1), ascii=True):
-                for i in tqdm(range(self.item_num), leave=bool(uj == self.user_num-1), ascii=True):
-                    for j in tqdm(range(self.item_num), leave=bool(i == self.item_num-1), ascii=True):
-                        if ui != uj or i == j:
-                            continue
-                        if self.R[ui, i] > self.R[uj, j]:
-                            self.samples.append((int(ui), int(i), int(j)))
+            for i in tqdm(range(self.item_num), leave=bool(ui == self.user_num-1), ascii=True):
+                for j in tqdm(range(self.item_num), leave=bool(i == self.item_num-1 and ui == self.user_num-1), ascii=True):
+                    if self.R[ui, i] > self.R[ui, j]:
+                        self.samples.append((int(ui), int(i), int(j)))
 
     def train(self):
         # do SGD [steps] round
