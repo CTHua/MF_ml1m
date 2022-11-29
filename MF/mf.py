@@ -2,6 +2,7 @@ import os
 import random
 import numpy as np
 from tqdm import tqdm
+import argparse
 random.seed(0)
 np.random.seed(0)
 
@@ -145,22 +146,48 @@ class MFModel():
             error.append(pow(self.R[x, y] - predicted[x, y], 2))
         return np.sqrt(np.average(error))
 
+    def __predict__(self, u, i):
+        return self.miu + self.b_u[u] + self.b_i[i] + self.P[u, :].dot(self.Q[i, :].T)
+
+    def predict_top_k(self, u, k=10):
+        """
+            return top k item for user u
+        """
+        items = np.arange(self.item_num)
+        predicted = [self.__predict__(u, i) for i in items]
+
+        # write recommend.txt
+        with open('recommend.txt', 'w') as f:
+            for i in np.argsort(predicted)[::-1][:k]:
+                f.write(str(i) + '\t' + str(predicted[i]) + '\n')
+        # return np.argsort(predicted)[::-1][:k]
+
 
 if __name__ == "__main__":
+
+    # Read arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--steps', type=int, default=1000,
+                        help='Number of steps to run trainer.')
+    parser.add_argument('--learning_rate', type=float, default=0.01,
+                        help='Initial learning rate')
+    parser.add_argument('--beta', type=float, default=0.01,
+                        help='Regularization parameter')
+    parser.add_argument('--k', type=int, default=10,
+                        help='Number of latent factors')
+
+    FLAGS, unparsed = parser.parse_known_args()
+    print("FLAGS: ", FLAGS)
     ratingfile_path = os.path.join("../data/ml-1m", "ratings.dat")
     origin_data = load_data(ratingfile_path)
     ui_matrix = get_ui_matrix(origin_data)
 
-    mf = MFModel(ui_matrix, K=100, lr=0.00001, beta=0.3, steps=1)
+    K = FLAGS.k
+    lr = FLAGS.learning_rate
+    beta = FLAGS.beta
+    steps = FLAGS.steps
+    mf = MFModel(ui_matrix, K=K, lr=lr, beta=beta, steps=steps)
     mf.train()
 
-    # user_list = [i[0] for i in obs_dataset]
-    # for each_user in tqdm(list(set(user_list)), total=len(list(set(user_list)))):
-    #     user_ratings = mf.full_matrix()[each_user].tolist()
-    #     topN = [(i, user_ratings.index(i)) for i in user_ratings]
-    #     # sort Top N
-    #     topN = [i[1] for i in sorted(topN, key=lambda x:x[0], reverse=True)][:10]
-    #     print("------ each_user ------")
-    #     print(each_user)
-    #     print("------ temp_topN ------")
-    #     print(temp_topN)
+    mf.predict_top_k(10)
+
